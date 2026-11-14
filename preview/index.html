@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>应用管理 · OpenClash 管控预览</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="#" onclick="return false">
+      <span class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.2" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="3.1" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="1" fill="currentColor"/>
+          <path d="M12 2.2v3.1M12 18.7v3.1M2.2 12h3.1M18.7 12h3.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" opacity=".55"/>
+        </svg>
+      </span>
+      <span class="brand-copy"><b>OpenWrt</b><small>10.10.10.2</small></span>
+    </a>
+
+    <div class="nav-group">
+      <div class="nav-label">管控</div>
+      <a class="nav-item" href="#" onclick="return false"><span class="nav-ico">◷</span>时间控制</a>
+      <a class="nav-item active" href="#" onclick="return false"><span class="nav-ico">◎</span>应用管理<span class="nav-badge">LIVE</span></a>
+      <a class="nav-item" href="#" onclick="return false"><span class="nav-ico">⌁</span>网址控制</a>
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">状态</div>
+      <a class="nav-item" href="#" onclick="return false"><span class="nav-ico">▤</span>运行状态</a>
+      <a class="nav-item" href="#" onclick="return false"><span class="nav-ico">◫</span>OpenClash</a>
+    </div>
+
+    <div class="sidebar-foot">
+      <div><span class="dot"></span>OpenClash · mihomo</div>
+      <div>fake-ip 198.18.0.0/16</div>
+      <div style="margin-top:8px;color:#526785">交互预览模型 · 不写入配置</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs"><span>管控</span><span class="sep">/</span><b>应用管理</b></div>
+      <div class="top-right">
+        <span class="status-pill"><span class="dot"></span>OpenClash 运行中</span>
+        <span class="preview-pill"><span class="diamond">◆</span> Interactive preview</span>
+        <button class="ghost-btn" id="focusCodeBtn" type="button">查看规则文件</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">Control / App Manager</div>
+          <h1>应用管理</h1>
+          <p>按设备 + 按应用，把 <code>AND(源 IP, 目标应用)</code> 规则写到 OpenClash 最顶部。勾选下面的应用，右侧规则会实时生成；这里只是浏览器里的预览，不会写入路由器。</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="saveApplyBtn" type="button">保存并应用</button>
+            <button class="btn" id="addDeviceBtn" type="button">＋ 添加设备</button>
+            <button class="btn btn-soft" id="addAppBtn" type="button">＋ 自定义应用</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <section class="control">
+          <section class="card status-card" id="statusCard">
+            <div class="status-main">
+              <div class="switch-wrap">
+                <label class="switch" aria-label="启用应用管控">
+                  <input type="checkbox" id="enabledToggle" checked>
+                  <span class="switch-track"></span>
+                </label>
+                <div class="switch-text">
+                  <b id="statusTitle">管控已开启</b>
+                  <span id="statusSub">规则在 = 封禁；取消勾选或关闭开关 = 放行。</span>
+                </div>
+              </div>
+              <span class="badge on" id="statusBadge"><span class="dot"></span>规则已启用</span>
+            </div>
+            <div class="stats">
+              <div class="stat accent"><b id="statRules">9</b><span>封禁规则</span></div>
+              <div class="stat"><b id="statDevices">1</b><span>管控设备</span></div>
+              <div class="stat"><b id="statPairs">9</b><span>勾选组合</span></div>
+              <div class="stat good"><b>已保护</b><span>微信核心域名</span></div>
+            </div>
+          </section>
+
+          <div class="warnings" id="warnings"></div>
+
+          <div class="section-head">
+            <div>
+              <h2>设备与应用</h2>
+              <p>每台设备单独勾选；同一应用在多台设备上会合并成一条规则。</p>
+            </div>
+            <div class="tools">
+              <button class="mini-btn" id="selectAllBtn" type="button">全部设备全选</button>
+              <button class="mini-btn" id="clearAllBtn" type="button">全部清空</button>
+            </div>
+          </div>
+
+          <div class="device-list" id="devices"></div>
+
+          <div class="note">
+            <span class="ico">i</span>
+            <div>“微信视频号”会保留聊天/支付/朋友圈/视频通话，封视频号/公众号/小程序。公众号域名也参与第三方微信登录，封了可能导致授权登录失败；视频通话需要实测。<br>演示默认设备是 <code>10.10.10.27</code>，9 个应用全部勾选。把“管控已开启”关掉，所有规则会变成注释；真实插件里，这些勾选会写入 <code>/etc/appmanager/config</code>。</div>
+          </div>
+          <div class="foot-note">规则语法：mihomo 逻辑规则 <code>AND</code> / <code>OR</code> · 预览只生成文本，不会执行 OpenClash 重启，也不会修改任何文件。</div>
+        </section>
+
+        <aside class="inspector" id="inspector">
+          <section class="card output-card" id="outputCard">
+            <div class="card-head">
+              <div>
+                <h2>生成的规则</h2>
+                <p id="codeMeta">写入自定义规则文件与运行配置</p>
+              </div>
+              <span class="badge on" id="codeBadge"><span class="dot"></span>9 条生效</span>
+            </div>
+            <div class="tabs" id="codeTabs">
+              <button class="tab active" type="button" data-tab="custom">自定义规则文件</button>
+              <button class="tab" type="button" data-tab="runtime">运行配置 次元.yaml</button>
+            </div>
+            <div class="file-path" id="filePath">/etc/openclash/custom/openclash_custom_rules.list</div>
+            <div class="code-wrap">
+              <div class="code" id="code" aria-label="生成的 YAML 规则"></div>
+            </div>
+            <div class="output-foot">
+              <span class="output-stats" id="outputStats">共 <b>9</b> 条规则 · 插入在 rules: 顶部</span>
+              <div class="output-actions">
+                <button class="mini-btn" id="copyBtn" type="button">复制</button>
+                <button class="mini-btn" id="downloadBtn" type="button">下载</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card hit-card">
+            <div class="hit-head">
+              <div>
+                <h2>命中测试</h2>
+                <p>模拟一次 App 连接，看它会不会命中规则。</p>
+              </div>
+              <span class="badge on" style="font-size:8px">fake-ip</span>
+            </div>
+            <div class="hit-grid">
+              <select class="input" id="hitDevice" aria-label="选择设备"></select>
+              <input class="input mono" id="hitDomain" value="fqnovel.com" placeholder="域名或 IP" aria-label="目标域名">
+              <button class="btn btn-primary" id="hitRun" type="button">模拟</button>
+            </div>
+            <div class="hit-quick">
+              <button class="quick" type="button" data-domain="fqnovel.com">红果</button>
+              <button class="quick" type="button" data-domain="weixin.qq.com">微信核心</button>
+              <button class="quick" type="button" data-domain="finder.video.qq.com">视频号</button>
+              <button class="quick" type="button" data-domain="short.weixin.qq.com">微信聊天</button>
+              <button class="quick" type="button" data-domain="mmbiz.qpic.cn">公众号图片</button>
+              <button class="quick" type="button" data-domain="taobao.com">淘宝</button>
+              <button class="quick" type="button" data-domain="douyin.com">抖音</button>
+            </div>
+            <div class="hit-result" id="hitResult"></div>
+          </section>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<dialog id="applyDialog">
+  <div class="dialog-body">
+    <h3 id="applyTitle">保存并应用</h3>
+    <p>这是预览模拟，不会写入路由器。真实插件会把规则同时写入自定义规则文件和运行配置，然后重启 OpenClash。</p>
+    <div class="apply-steps" id="applySteps">
+      <div class="apply-step" data-step="0"><span class="n">1</span><span>校验设备与规则</span></div>
+      <div class="apply-step" data-step="1"><span class="n">2</span><span>生成 AND 规则</span></div>
+      <div class="apply-step" data-step="2"><span class="n">3</span><span>写入自定义规则文件</span></div>
+      <div class="apply-step" data-step="3"><span class="n">4</span><span>写入运行配置 次元.yaml</span></div>
+      <div class="apply-step" data-step="4"><span class="n">5</span><span>重启 OpenClash（模拟）</span></div>
+    </div>
+    <div class="apply-note" id="applyNote"></div>
+    <div class="dialog-actions">
+      <button class="btn" type="button" id="applyCancel">取消</button>
+      <button class="btn btn-primary" type="button" id="applyConfirm">模拟应用</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="appDialog">
+  <form method="dialog" class="dialog-body" id="appForm">
+    <h3>添加自定义应用</h3>
+    <p>添加后会在所有设备卡片里出现，勾选后才会生成规则。适合游戏或未内置的 App。</p>
+    <label class="dialog-field">
+      <span>应用名称</span>
+      <input class="input" id="caName" placeholder="例如：王者荣耀" autocomplete="off">
+    </label>
+    <label class="dialog-field">
+      <span>域名 / IP 目标</span>
+      <textarea id="caTargets" placeholder="game.example.com&#10;game2.example.com&#10;ip:1.2.3.0/24"></textarea>
+    </label>
+    <div class="dialog-error" id="caError"></div>
+    <div class="dialog-actions">
+      <button class="btn" type="button" id="caCancel">取消</button>
+      <button class="btn btn-primary" type="button" id="caAdd">添加</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>

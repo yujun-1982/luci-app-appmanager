@@ -1,0 +1,6 @@
+dist/
+tools/
+*.tar.gz
+*.zip
+*.log
+.DS_Store

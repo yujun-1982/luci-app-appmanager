@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>微信功能管控 · 白名单预览</title>
+<link rel="stylesheet" href="wechat.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 3.2 19 6v5.7c0 4.4-3 7.3-7 9.1-4-1.8-7-4.7-7-9.1V6l7-2.8Z" stroke="currentColor" stroke-width="1.5"/>
+        <path d="m8.7 12 2.1 2.1 4.5-4.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </span>
+    <span><b>微信功能管控</b><small>WeChat policy preview</small></span>
+  </div>
+  <div class="top-actions">
+    <span class="pill preview"><span class="dot"></span>Interactive preview</span>
+    <span class="pill safe"><span class="dot"></span>不写入路由器</span>
+    <a class="back-link" href="index.html">← 应用管理预览</a>
+    <a class="back-link" href="suite.html">完整预览</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">WeChat / Feature allowlist</div>
+      <h1>只保留四个功能</h1>
+      <p>聊天、支付、朋友圈、视频通话保持放行；视频号和其他可独立识别的功能按需封禁。这是浏览器里的<strong>策略预览</strong>，不会修改 OpenClash，也不会影响路由器。</p>
+    </div>
+    <div class="hero-side">
+      <div class="strength" aria-label="策略强度">
+        <span>策略</span>
+        <button type="button" data-strength="conservative">保守</button>
+        <button type="button" data-strength="standard" class="active">标准</button>
+        <button type="button" data-strength="aggressive">激进</button>
+      </div>
+      <div class="policy-actions">
+        <button class="btn btn-danger-soft" id="wechatPower" type="button">关闭微信管控</button>
+        <button class="btn btn-primary" id="wechatSave" type="button">保存并应用</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid">
+    <section class="left">
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>保留 · 不进入 REJECT</h2>
+            <p>这四项功能使用微信核心域名，规则只做放行，不生成阻断。</p>
+          </div>
+          <span class="risk safe">LOCKED</span>
+        </div>
+        <div class="keep-grid">
+          <div class="keep-card locked">
+            <span class="lock">KEEP</span>
+            <div class="keep-icon">聊</div>
+            <div><b>聊天</b><small>文字 / 语音 / 群聊<br><code>short.weixin.qq.com</code></small></div>
+          </div>
+          <div class="keep-card locked">
+            <span class="lock">KEEP</span>
+            <div class="keep-icon">付</div>
+            <div><b>支付</b><small>红包 / 转账 / 付款<br><code>tenpay.com</code></small></div>
+          </div>
+          <div class="keep-card locked">
+            <span class="lock">KEEP</span>
+            <div class="keep-icon">圈</div>
+            <div><b>朋友圈</b><small>图片 / 普通视频<br><code>wxsnsdy.*</code></small></div>
+          </div>
+          <div class="keep-card call locked">
+            <span class="lock">TEST</span>
+            <div class="keep-icon">话</div>
+            <div><b>视频通话</b><small>建议真机确认<br><code>RTC / VOIP</code></small></div>
+          </div>
+        </div>
+        <p class="keep-note">这四项不写入封禁规则；但视频通话的具体域名尚未抓包确认，如果发现被误伤，应先移除 <code>finder.video.qq.com</code> 或单独做通话白名单。</p>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h2>其他功能 · 可勾选封禁</h2>
+            <p>只对源 IP 生效；勾选后才会生成对应的 REJECT 规则。</p>
+          </div>
+          <span class="risk warn" id="blockCount">4 条规则</span>
+        </div>
+        <div class="feature-list" id="features"></div>
+        <div class="matrix">
+          <div class="matrix-row"><span>可独立封禁</span><b class="yes">视频号 / 公众号 / 小程序</b></div>
+          <div class="matrix-row"><span>共用 weixin.qq.com，不能单独封</span><b class="no">搜一搜 / 看一看</b></div>
+          <div class="matrix-row"><span>需要抓包确认</span><b>游戏 / 购物 / 直播入口</b></div>
+        </div>
+      </section>
+    </section>
+
+    <aside class="right">
+      <section class="card hit-card">
+        <div class="hit-head">
+          <div>
+            <h2>命中测试</h2>
+            <p>模拟一次微信连接，看它落在保留区还是封禁区。</p>
+          </div>
+          <span class="risk safe">fake-ip</span>
+        </div>
+        <div class="hit-controls">
+          <input class="input" id="domain" value="finder.video.qq.com" aria-label="目标域名" spellcheck="false">
+          <button class="btn btn-primary" id="run" type="button">模拟</button>
+        </div>
+        <div class="quick">
+          <button type="button" data-domain="short.weixin.qq.com">聊天</button>
+          <button type="button" data-domain="tenpay.com">支付</button>
+          <button type="button" data-domain="wxsnsdy.tc.qq.com">朋友圈</button>
+          <button type="button" data-domain="finder.video.qq.com">视频号</button>
+          <button type="button" data-domain="mp.weixin.qq.com">公众号</button>
+          <button type="button" data-domain="servicewechat.com">小程序</button>
+          <button type="button" data-domain="weixin.qq.com">共享域</button>
+        </div>
+        <div class="hit-result" id="hitResult"></div>
+      </section>
+
+      <section class="card rules-card">
+        <div class="card-head">
+          <div>
+            <h2>规则片段</h2>
+            <p>只展示微信这一组；真实插件还会合并设备源 IP。</p>
+          </div>
+          <span class="risk safe" id="ruleBadge">4 条</span>
+        </div>
+        <div class="tabs">
+          <button class="tab active" type="button" data-tab="rules">微信规则</button>
+          <button class="tab" type="button" data-tab="allow">保留清单</button>
+        </div>
+        <div class="path" id="path">openclash_custom_rules.list · 插入 rules: 顶部</div>
+        <div class="source-row" id="sourceRow">
+          <span>源 IP</span>
+          <input class="input" id="sourceIp" value="10.10.10.27" spellcheck="false" aria-label="源 IP">
+          <span class="bad">格式不正确</span>
+        </div>
+        <div class="code-wrap"><div class="code" id="code"></div></div>
+        <div class="out-foot">
+          <span class="out-stats" id="stats">源 IP <b>10.10.10.27</b> · 4 条封禁</span>
+          <div class="out-actions">
+            <button class="btn" id="copy" type="button">复制</button>
+            <button class="btn" id="download" type="button">下载</button>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+
+  <p class="foot">规则语法：mihomo <code>AND</code> + <code>DOMAIN-SUFFIX</code> / <code>DOMAIN</code>。预览只生成文本；真实插件中“微信视频号”只封专用域名，“微信非核心”建议做成单独的自定义应用。</p>
+</main>
+
+<dialog id="applyDialog">
+  <div class="dialog-body">
+    <h3>保存并应用</h3>
+    <p>这是预览模拟，不会写入路由器。真实插件会把微信规则写入自定义规则文件和运行配置，并重启 OpenClash。</p>
+    <div class="apply-steps" id="applySteps">
+      <div class="apply-step" data-step="0"><span class="n">1</span><span>校验保留项与封禁项</span></div>
+      <div class="apply-step" data-step="1"><span class="n">2</span><span>生成微信 AND 规则</span></div>
+      <div class="apply-step" data-step="2"><span class="n">3</span><span>写入两个 OpenClash 文件</span></div>
+      <div class="apply-step" data-step="3"><span class="n">4</span><span>重启 OpenClash（模拟）</span></div>
+    </div>
+    <div class="apply-note" id="applyNote"></div>
+    <div class="dialog-actions">
+      <button class="btn" type="button" id="applyCancel">取消</button>
+      <button class="btn btn-primary" type="button" id="applyConfirm">模拟应用</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+<script src="wechat.js"></script>
+</body>
+</html>
