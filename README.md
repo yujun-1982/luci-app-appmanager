@@ -74,12 +74,14 @@ uci commit openclash
 
 ## 3. 安装
 
+仓库根是 **feed 根目录**，真正参与 OpenWrt 编译的包在 `luci-app-appmanager/` 子目录。`scripts/feeds` 只会扫描 feed 下的包子目录，所以不要把 Makefile 放回仓库根。
+
 ### 3.1 编成 OpenWrt 包（推荐）
 
-把整个 `luci-app-appmanager` 目录放进 OpenWrt SDK / 源码的 `package/` 下：
+把仓库里的 **`luci-app-appmanager/` 包子目录**放进 OpenWrt SDK / 源码的 `package/` 下：
 
 ```sh
-cp -r luci-app-appmanager package/
+cp -r luci-app-appmanager/luci-app-appmanager package/
 make package/luci-app-appmanager/compile V=s
 ```
 
@@ -94,7 +96,7 @@ OpenWrt 25.12 的产物是 `.apk`，旧版本是 `.ipk`，以你的 SDK 为准�
 ### 3.2 手工安装（仅用于调试）
 
 ```sh
-scp -r luci-app-appmanager root@10.10.10.2:/tmp/
+scp -r luci-app-appmanager/luci-app-appmanager root@10.10.10.2:/tmp/
 ssh root@10.10.10.2
 cd /tmp/luci-app-appmanager
 sh install.sh

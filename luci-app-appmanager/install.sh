@@ -5,6 +5,9 @@
 # 如果只想打包成 OpenWrt 包，请用 SDK 编译本目录，不要运行这个脚本。
 set -eu
 
+# 允许从仓库根目录执行：sh luci-app-appmanager/install.sh
+cd "$(dirname "$0")"
+
 [ "$(id -u)" = 0 ] || { echo "请用 root 执行" >&2; exit 1; }
 [ -d /etc/openclash ] || { echo "未找到 /etc/openclash，请先安装 OpenClash" >&2; exit 1; }
 command -v uci >/dev/null 2>&1 || { echo "未找到 uci，不像 OpenWrt 环境" >&2; exit 1; }
